@@ -50,15 +50,24 @@ const CameraTile = ({ camera, onDoubleClick }) => {
       </div>
       
       <div className="camera-video">
-        {camera.status === 'live' && camera.hlsUrl ? (
+        {camera.status === 'live' && (camera.hlsUrl || camera.streamUrl) ? (
           <video
-            src={camera.hlsUrl}
             autoPlay
             muted
             playsInline
-            loop
             className="video-element"
-          />
+            onError={(e) => {
+              console.error(`Video error for ${camera.name}:`, e);
+              // Could implement retry logic or status updates here
+            }}
+          >
+            {/* Try HLS stream first for better mobile support */}
+            {camera.hlsUrl && <source src={camera.hlsUrl} type="application/x-mpegURL" />}
+            {camera.streamUrl && <source src={camera.streamUrl} type="video/mp4" />}
+            {/* Fallback RTMP for direct stream if available */}
+            {camera.rtmpUrl && <source src={camera.rtmpUrl} type="rtmp/mp4" />}
+            Your browser does not support the video tag.
+          </video>
         ) : camera.status === 'connecting' ? (
           <div className="loading-placeholder">
             <div className="loading-spinner"></div>

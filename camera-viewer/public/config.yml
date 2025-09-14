@@ -1,0 +1,116 @@
+# Kerberos.io Multi-Agent Configuration
+# This file defines the configuration for multiple Kerberos agents
+
+# Global settings
+global:
+  # Base paths for configurations and recordings
+  config_base_path: "./configs"
+  recordings_base_path: "./recordings"
+  
+  # Docker network settings
+  network_name: "kerberos-network"
+  
+  # Kerberos agent Docker image
+  kerberos_image: "kerberos/agent:latest"
+
+# Camera configuration
+cameras:
+  # IP range configuration
+  ip_range:
+    start: "10.19.19.30"
+    end: "10.19.19.38"
+  
+  # Camera connection settings
+  connection:
+    # Common camera settings
+    protocol: "rtsp"  # rtsp, http, https
+    port: 554
+    username: "admin"
+    password: "password"
+    # Path to the RTSP stream (e.g., /stream1, /live)
+    stream_path: "/stream1"
+    # Alternative: You can specify individual camera configs
+    # individual_configs:
+    #   - ip: "10.19.19.30"
+    #     username: "admin1"
+    #     password: "pass1"
+    #     stream_path: "/stream1"
+    #   - ip: "10.19.19.31"
+    #     username: "admin2" 
+    #     password: "pass2"
+    #     stream_path: "/live"
+
+  # Agent configuration
+  agent_settings:
+    # Motion detection settings
+    detection:
+      enabled: true
+      threshold: 20
+      # Region of interest (optional)
+      # roi: "0,0,1920,1080"
+    
+    # Recording settings
+    recording:
+      enabled: true
+      # Recording duration in seconds
+      duration: 30
+      # Pre-recording buffer in seconds
+      pre_recording: 5
+      # Post-recording buffer in seconds 
+      post_recording: 5
+      # Video format
+      format: "mp4"
+      # Video quality (1-100)
+      quality: 80
+    
+    # Stream settings
+    stream:
+      # Enable live streaming
+      enabled: true
+      # Quality for live stream
+      quality: 60
+      # Frame rate for live stream
+      fps: 15
+
+# Docker compose settings
+docker:
+  # Restart policy
+  restart_policy: "unless-stopped"
+  
+  # Resource limits (optional)
+  limits:
+    memory: "512m"
+    cpus: "0.5"
+  
+  # Port range for web interfaces (starts from this port)
+  web_port_start: 8080
+  
+  # Port range for RTMP streaming (starts from this port)
+  rtmp_port_start: 1935
+
+# Optional: Integration settings
+integrations:
+  # Webhook notifications (optional)
+  webhook:
+    enabled: false
+    url: "https://your-webhook-url.com/notify"
+    
+  # MQTT settings (optional)
+  mqtt:
+    enabled: false
+    broker: "mqtt://localhost:1883"
+    topic_prefix: "kerberos/cameras"
+    
+  # Cloud storage (optional)
+  cloud_storage:
+    enabled: false
+    provider: "s3"  # s3, azure, gcp
+    bucket: "your-bucket-name"
+    region: "us-west-2"
+
+# Optional: Custom environment variables for agents
+custom_environment:
+  # Example: Set timezone
+  TZ: "Asia/Manila"
+  # Example: Enable debug logging
+  # KERBEROS_AGENT_LOG_LEVEL: "debug"
