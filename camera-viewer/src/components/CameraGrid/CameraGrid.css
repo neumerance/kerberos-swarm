@@ -1,0 +1,203 @@
+.camera-grid-container {
+  width: 100%;
+  height: 100vh;
+  background: #000;
+  overflow: hidden;
+}
+
+.camera-grid {
+  display: grid;
+  gap: 8px;
+  padding: 8px;
+  width: 100%;
+  height: 100vh;
+  box-sizing: border-box;
+  
+  /* Default: Mobile portrait - 1 column */
+  grid-template-columns: repeat(var(--grid-columns, 1), 1fr);
+  grid-auto-rows: 1fr;
+}
+
+/* Mobile specific grid adjustments */
+@media (max-width: 767px) {
+  .camera-grid {
+    gap: 4px;
+    padding: 4px;
+  }
+  
+  /* Portrait: Stack vertically with scrolling */
+  .camera-grid[style*="--is-portrait: 1"] {
+    grid-auto-rows: minmax(180px, auto);
+    overflow-y: auto;
+    height: 100vh;
+  }
+  
+  /* Landscape: 2 columns, fit screen */
+  .camera-grid[style*="--is-portrait: 0"] {
+    grid-auto-rows: 1fr;
+    overflow: hidden;
+  }
+}
+
+/* Tablet styles */
+@media (min-width: 768px) and (max-width: 1023px) {
+  .camera-grid {
+    gap: 6px;
+    padding: 6px;
+  }
+  
+  /* Portrait: 2 columns */
+  .camera-grid[style*="--is-portrait: 1"] {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  
+  /* Landscape: 3 columns */
+  .camera-grid[style*="--is-portrait: 0"] {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+/* Desktop styles */
+@media (min-width: 1024px) {
+  .camera-grid {
+    gap: 12px;
+    padding: 12px;
+    grid-template-columns: repeat(var(--grid-columns, 3), 1fr);
+  }
+}
+
+/* Grid item specific styles */
+.grid-item {
+  min-height: 0; /* Allow flex items to shrink */
+}
+
+/* Responsive grid layouts */
+.grid-1-col {
+  /* Single column - full width */
+}
+
+.grid-2-col {
+  /* Two columns */
+}
+
+.grid-3-col {
+  /* Three columns */
+}
+
+.grid-4-col {
+  /* Four columns - for larger screens */
+}
+
+/* Empty state */
+.empty-grid {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100vh;
+  color: #666;
+  text-align: center;
+  padding: 40px 20px;
+}
+
+.empty-icon {
+  font-size: 64px;
+  margin-bottom: 20px;
+  opacity: 0.5;
+}
+
+.empty-text {
+  font-size: 24px;
+  font-weight: 600;
+  margin-bottom: 12px;
+  color: #999;
+}
+
+.empty-hint {
+  font-size: 14px;
+  color: #666;
+  max-width: 400px;
+  line-height: 1.5;
+}
+
+/* Smooth transitions */
+.camera-grid {
+  transition: grid-template-columns 0.3s ease;
+}
+
+/* Accessibility improvements */
+@media (prefers-reduced-motion: reduce) {
+  .camera-grid,
+  .grid-item {
+    transition: none;
+  }
+}
+
+/* High contrast mode */
+@media (prefers-contrast: high) {
+  .camera-grid {
+    gap: 2px;
+    border: 2px solid #fff;
+  }
+  
+  .empty-text {
+    color: #fff;
+  }
+  
+  .empty-hint {
+    color: #ccc;
+  }
+}
+
+/* Landscape orientation specific adjustments */
+@media (orientation: landscape) {
+  /* Ensure grid fills viewport in landscape */
+  .camera-grid {
+    max-height: 100vh;
+    overflow-y: auto;
+  }
+}
+
+/* Portrait orientation specific adjustments */
+@media (orientation: portrait) {
+  /* Allow scrolling in portrait mode for mobile */
+  .camera-grid {
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+}
+
+/* Very small screens (old phones) */
+@media (max-width: 360px) {
+  .camera-grid {
+    gap: 2px;
+    padding: 2px;
+  }
+  
+  .empty-icon {
+    font-size: 48px;
+  }
+  
+  .empty-text {
+    font-size: 18px;
+  }
+  
+  .empty-hint {
+    font-size: 12px;
+  }
+}
+
+/* Large tablets and small desktops */
+@media (min-width: 1200px) {
+  .camera-grid {
+    padding: 16px;
+    gap: 16px;
+  }
+}
+
+/* Ultra-wide screens */
+@media (min-width: 1600px) {
+  .camera-grid {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
