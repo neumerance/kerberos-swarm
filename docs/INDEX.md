@@ -32,6 +32,11 @@ Welcome to the Kerberos Multi-Agent System documentation! 📚
   - Best practices for clean development
   - Configuration management workflows
 
+- **[CAMERA-VIEWER-PLANNING.md](./CAMERA-VIEWER-PLANNING.md)** - React.js multi-camera viewer planning
+  - Technical architecture and UI design
+  - RTMP stream integration strategy
+  - Docker deployment and development roadmap
+
 ## 🔗 Quick Navigation
 
 | Need to... | Go to |
@@ -41,6 +46,7 @@ Welcome to the Kerberos Multi-Agent System documentation! 📚
 | **Check project status** | [DEVELOPMENT-CHECKLIST.md](./DEVELOPMENT-CHECKLIST.md) |
 | **Learn about git workflow** | [GIT-GUIDELINES.md](./GIT-GUIDELINES.md) |
 | **See technical evolution** | [CLI-MIGRATION.md](./CLI-MIGRATION.md) |
+| **Plan camera viewer app** | [CAMERA-VIEWER-PLANNING.md](./CAMERA-VIEWER-PLANNING.md) |
 
 ## 📋 Main README
 For the main project overview, installation, and usage, see the root **[README.md](../README.md)**.
