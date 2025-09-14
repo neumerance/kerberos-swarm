@@ -57,11 +57,17 @@ if exist setup.py (
 REM Create batch wrapper as fallback
 echo [INFO] Creating batch wrapper...
 echo @echo off > kerberos.bat
-echo python "%%~dp0kerberos_cli.py" %%* >> kerberos.bat
+echo python "%%~dp0kerberos_lite.py" %%* >> kerberos.bat
 
 echo [SUCCESS] Windows batch file created: kerberos.bat
 echo [INFO] You can now use: kerberos --help
-echo [INFO] Or: python kerberos_cli.py --help
+echo [INFO] Or: python kerberos_lite.py --help
+
+REM Also create PowerShell script
+echo #!/usr/bin/env pwsh > kerberos.ps1
+echo ^& python "$PSScriptRoot\kerberos_lite.py" $args >> kerberos.ps1
+
+echo [SUCCESS] PowerShell script created: kerberos.ps1
 
 :end
 echo.

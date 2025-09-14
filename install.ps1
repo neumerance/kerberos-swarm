@@ -78,14 +78,22 @@ Write-Host "[INFO] Creating batch wrapper..." -ForegroundColor Blue
 
 $batchContent = @"
 @echo off
-python "%~dp0kerberos_cli.py" %*
+python "%~dp0kerberos_lite.py" %*
 "@
 
 Set-Content -Path "kerberos.bat" -Value $batchContent
 
+$psContent = @"
+#!/usr/bin/env pwsh
+& python "$PSScriptRoot\kerberos_lite.py" $args
+"@
+
+Set-Content -Path "kerberos.ps1" -Value $psContent
+
 Write-Host "[SUCCESS] Windows batch file created: kerberos.bat" -ForegroundColor Green
+Write-Host "[SUCCESS] PowerShell script created: kerberos.ps1" -ForegroundColor Green
 Write-Host "[INFO] You can now use: kerberos --help" -ForegroundColor Cyan
-Write-Host "[INFO] Or: python kerberos_cli.py --help" -ForegroundColor Cyan
+Write-Host "[INFO] Or: python kerberos_lite.py --help" -ForegroundColor Cyan
 
 Write-Host ""
 Write-Host "[KERBEROS] Installation completed!" -ForegroundColor Blue

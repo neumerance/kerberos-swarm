@@ -95,24 +95,28 @@ install_dependencies() {
 install_cli() {
     print_info "Installing Kerberos CLI globally..."
     
+    # Try pip installation first
     if [[ -f "setup.py" ]]; then
-        $PIP_CMD install -e .
-        print_status "CLI installed globally as 'kerberos' command"
-    else
-        print_warning "setup.py not found, creating manual installation..."
-        
-        # Create a wrapper script
-        if [[ "$OS" == "Windows" ]]; then
-            create_windows_wrapper
+        if $PIP_CMD install -e . 2>/dev/null; then
+            print_status "CLI installed globally as 'kerberos' command via pip"
+            return 0
         else
-            create_unix_wrapper
+            print_warning "Pip installation failed, falling back to manual installation"
         fi
+    fi
+    
+    # Manual installation - create wrapper script
+    if [[ "$OS" == "Windows" ]]; then
+        create_windows_wrapper
+    else
+        create_unix_wrapper
     fi
 }
 
 # Create Unix wrapper (macOS/Linux)
 create_unix_wrapper() {
     local install_dir
+    local project_dir="$(pwd)"
     
     # Try to find a good installation directory
     if [[ -d "$HOME/.local/bin" ]]; then
@@ -124,9 +128,27 @@ create_unix_wrapper() {
         mkdir -p "$install_dir"
     fi
     
+    print_info "Installing to: $install_dir"
+    
+    # Create the global kerberos script
     cat > "$install_dir/kerberos" << EOF
-#!/bin/bash
-$PYTHON_CMD "$(pwd)/kerberos_cli.py" "\$@"
+#!/usr/bin/env python3
+import os
+import sys
+import subprocess
+from pathlib import Path
+
+# Project directory (where the actual CLI files are)
+PROJECT_DIR = Path("$project_dir")
+KERBEROS_LITE = PROJECT_DIR / "kerberos_lite.py"
+
+if KERBEROS_LITE.exists():
+    # Run the CLI with all arguments
+    subprocess.run([sys.executable, str(KERBEROS_LITE)] + sys.argv[1:])
+else:
+    print("Error: Kerberos CLI not found at $project_dir")
+    print("Please ensure the kerberos-swarms project is at the expected location")
+    sys.exit(1)
 EOF
     
     chmod +x "$install_dir/kerberos"
@@ -134,22 +156,41 @@ EOF
     
     # Check if directory is in PATH
     if [[ ":$PATH:" == *":$install_dir:"* ]]; then
-        print_status "Directory is in PATH"
+        print_status "Directory is in PATH - you can use 'kerberos' command"
     else
         print_warning "Add $install_dir to your PATH:"
-        echo "export PATH=\"$install_dir:\$PATH\""
+        echo ""
+        echo "  # Add this to your ~/.bashrc or ~/.zshrc:"
+        echo "  export PATH=\"$install_dir:\$PATH\""
+        echo ""
+        echo "  # Then reload your shell:"
+        echo "  source ~/.bashrc   # or source ~/.zshrc"
+        echo ""
+        print_info "Or use full path: $install_dir/kerberos"
     fi
 }
 
 # Create Windows wrapper
 create_windows_wrapper() {
+    local project_dir="$(pwd)"
+    
+    # Create batch file
     cat > "kerberos.bat" << EOF
 @echo off
-$PYTHON_CMD "%~dp0kerberos_cli.py" %*
+$PYTHON_CMD "%~dp0kerberos_lite.py" %*
 EOF
     
     print_status "Windows batch file created: kerberos.bat"
+    print_info "You can now use: kerberos --help"
     print_info "Add this directory to your PATH to use 'kerberos' globally"
+    
+    # Also create PowerShell script
+    cat > "kerberos.ps1" << EOF
+#!/usr/bin/env pwsh
+& $PYTHON_CMD "\$PSScriptRoot\\kerberos_lite.py" \$args
+EOF
+    
+    print_status "PowerShell script created: kerberos.ps1"
 }
 
 # Create development setup
@@ -210,8 +251,16 @@ main() {
     
     echo ""
     print_header "Installation completed!"
-    print_info "Test the CLI with: kerberos --help"
-    print_info "Or run directly: python3 kerberos_cli.py --help"
+    print_info "Kerberos.io Multi-Agent CLI is ready!"
+    echo ""
+    print_status "Next steps:"
+    print_info "1. Test the CLI: kerberos --help (or use full path if not in PATH)"
+    print_info "2. Check system: kerberos check"  
+    print_info "3. Configure cameras in config.yml"
+    print_info "4. Deploy agents: kerberos start"
+    echo ""
+    print_info "For help: kerberos --help"
+    print_info "Documentation: cat README.md"
 }
 
 # Detect OS and run

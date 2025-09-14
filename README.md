@@ -447,6 +447,17 @@ tar -xzf kerberos-backup-20231215.tar.gz
 ./manage.sh redeploy
 ```
 
+## 📚 Documentation
+
+For detailed information, see our comprehensive documentation in the [`docs/`](./docs/) directory:
+
+- **[📖 Documentation Index](./docs/INDEX.md)** - Complete navigation guide
+- **[🚀 Quick Start Guide](./docs/QUICK-START.md)** - Fast setup for immediate deployment
+- **[📋 Project Summary](./docs/PROJECT-SUMMARY.md)** - Architecture and technical details
+- **[🛠️ Development Guide](./docs/DEVELOPMENT-CHECKLIST.md)** - Feature status and testing
+- **[📁 Git Guidelines](./docs/GIT-GUIDELINES.md)** - Repository management best practices
+- **[🔄 Migration History](./docs/CLI-MIGRATION.md)** - Evolution from shell scripts to CLI
+
 ## Contributing
 
 1. Fork this repository
