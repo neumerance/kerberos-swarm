@@ -29,6 +29,7 @@ kerberos-swarms/
 │   └── demo.py                # Usage demonstration script
 ├── 🛠️ Installation Scripts  
 │   ├── install.sh             # Unix installer (macOS/Linux)
+│   ├── install-cli.sh         # Alternative CLI installer
 │   ├── install.bat            # Windows installer (Command Prompt)
 │   └── install.ps1            # Windows installer (PowerShell)
 ├── 📜 Legacy Shell Scripts (Deprecated but functional)
@@ -38,17 +39,23 @@ kerberos-swarms/
 │   ├── stop.sh               # Quick stop
 │   ├── check-deps.sh         # Dependency checker
 │   └── overview.sh           # Help/overview
-├── 📁 Directory Structure
-│   ├── configs/              # Generated agent configurations
-│   ├── recordings/           # Agent recordings storage
-│   ├── scripts/              # Additional utilities
-│   └── templates/            # Configuration templates
-├── 📚 Documentation
-│   ├── README.md             # Complete user guide
-│   ├── CLI-MIGRATION.md      # Shell → Python migration guide
-│   └── PROJECT-SUMMARY.md    # This file
-└── 🐳 Generated Files
-    └── docker-compose.yml    # Auto-generated compose file
+├── � Documentation
+│   ├── README.md             # Main project guide (root)
+│   └── docs/                 # Organized documentation
+│       ├── INDEX.md          # Documentation navigation
+│       ├── QUICK-START.md    # Fast setup guide
+│       ├── PROJECT-SUMMARY.md # This file
+│       ├── CLI-MIGRATION.md  # Evolution history
+│       ├── DEVELOPMENT-CHECKLIST.md # Feature tracking
+│       └── GIT-GUIDELINES.md # Repository best practices
+├── 🔧 Project Configuration
+│   ├── .gitignore           # Git ignore rules
+│   └── .tool-versions       # Tool version management
+└── 🐳 Generated Files (Gitignored)
+    ├── docker-compose.yml   # Auto-generated compose file
+    ├── configs/             # Agent configurations
+    ├── recordings/          # Camera recordings
+    └── kerberos_swarms.egg-info/ # Python package metadata
 ```
 
 ## 📋 Configuration System

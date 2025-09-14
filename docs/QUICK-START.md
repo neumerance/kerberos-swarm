@@ -1,17 +1,33 @@
-# Kerberos CLI - Quick Reference
+# Kerberos CLI - Quick Start Guide
 
-## 🚀 Global Command Ready!
+## 🚀 Installation
 
-You now have the `kerberos` command available globally! Here's what you can do:
+Choose your installation method:
 
-### Add to PATH (one-time setup)
+### Option 1: Automated Installation (Recommended)
 ```bash
-# Add this to your ~/.bashrc or ~/.zshrc
-export PATH="/Users/jonjon/.local/bin:$PATH"
+# macOS/Linux
+./install.sh
 
-# Then reload your shell
-source ~/.bashrc  # or ~/.zshrc
+# Windows Command Prompt
+install.bat
+
+# Windows PowerShell
+.\install.ps1
 ```
+
+### Option 2: Manual Installation
+```bash
+# Install Python dependencies
+pip install -r requirements.txt
+
+# Install CLI globally
+pip install -e .
+```
+
+## ⚡ Quick Commands
+
+After installation, the `kerberos` command is available globally:
 
 ### Quick Commands
 ```bash
