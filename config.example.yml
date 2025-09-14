@@ -1,0 +1,55 @@
+# Example Configuration for Home Security Setup
+# Copy this to config.yml and modify for your environment
+
+global:
+  config_base_path: "./configs"
+  recordings_base_path: "./recordings"
+  network_name: "kerberos-network"
+  kerberos_image: "kerberos/agent:latest"
+
+cameras:
+  # Example: 4 cameras from .30 to .33
+  ip_range:
+    start: "192.168.1.30"
+    end: "192.168.1.33"
+  
+  connection:
+    protocol: "rtsp"
+    port: 554
+    username: "admin"
+    password: "admin123"
+    stream_path: "/h264/ch1/main/av_stream"
+
+  agent_settings:
+    detection:
+      enabled: true
+      threshold: 15  # More sensitive for home use
+    
+    recording:
+      enabled: true
+      duration: 60   # Longer recordings
+      pre_recording: 10
+      post_recording: 10
+      format: "mp4"
+      quality: 85    # High quality for evidence
+    
+    stream:
+      enabled: true
+      quality: 70
+      fps: 20
+
+docker:
+  restart_policy: "unless-stopped"
+  web_port_start: 8080
+  rtmp_port_start: 1935
+  limits:
+    memory: "512m"
+    cpus: "0.5"
+
+integrations:
+  webhook:
+    enabled: true
+    url: "https://maker.ifttt.com/trigger/motion_detected/with/key/YOUR_KEY"
+
+custom_environment:
+  TZ: "Asia/Manila"
