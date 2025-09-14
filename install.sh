@@ -193,6 +193,53 @@ EOF
     print_status "PowerShell script created: kerberos.ps1"
 }
 
+# Setup camera viewer
+setup_camera_viewer() {
+    print_info "Setting up camera viewer web interface..."
+    
+    # Check if Node.js is available
+    if ! command -v node &> /dev/null; then
+        print_warning "Node.js not found. Camera viewer setup skipped."
+        print_info "To install Node.js: https://nodejs.org/"
+        return 1
+    fi
+    
+    # Check if npm is available
+    if ! command -v npm &> /dev/null; then
+        print_warning "npm not found. Camera viewer setup skipped."
+        return 1
+    fi
+    
+    local node_version=$(node --version)
+    print_status "Node.js found: $node_version"
+    
+    # Navigate to camera-viewer directory
+    if [ -d "camera-viewer" ]; then
+        cd camera-viewer
+        
+        # Create symbolic link for config.yml if it doesn't exist
+        if [ ! -L "public/config.yml" ]; then
+            print_info "Creating symbolic link to config.yml..."
+            ln -sf ../../config.yml public/config.yml
+            print_status "Symbolic link created: camera-viewer/public/config.yml -> ../../config.yml"
+        else
+            print_status "Symbolic link already exists"
+        fi
+        
+        # Install npm dependencies
+        print_info "Installing camera viewer dependencies..."
+        npm install
+        
+        print_status "Camera viewer setup completed!"
+        print_info "To start the camera viewer:"
+        print_info "  cd camera-viewer && npm start"
+        
+        cd ..
+    else
+        print_warning "camera-viewer directory not found, skipping camera viewer setup"
+    fi
+}
+
 # Create development setup
 setup_development() {
     print_info "Setting up development environment..."
@@ -231,19 +278,25 @@ main() {
         "install")
             install_dependencies
             install_cli
+            setup_camera_viewer
             ;;
         "dev"|"development")
             setup_development "$2"
+            setup_camera_viewer
             ;;
         "deps"|"dependencies")
             install_dependencies
             ;;
+        "viewer"|"camera-viewer")
+            setup_camera_viewer
+            ;;
         *)
-            echo "Usage: $0 [install|dev|deps]"
+            echo "Usage: $0 [install|dev|deps|viewer]"
             echo ""
             echo "  install      - Install CLI globally (default)"
             echo "  dev          - Setup for development"
             echo "  deps         - Install dependencies only"
+            echo "  viewer       - Setup camera viewer only"
             echo ""
             exit 1
             ;;
@@ -258,7 +311,9 @@ main() {
     print_info "2. Check system: kerberos check"  
     print_info "3. Configure cameras in config.yml"
     print_info "4. Deploy agents: kerberos start"
+    print_info "5. Start camera viewer: cd camera-viewer && npm start"
     echo ""
+    print_info "Camera viewer will be available at: http://localhost:3000"
     print_info "For help: kerberos --help"
     print_info "Documentation: cat README.md"
 }

@@ -9,6 +9,7 @@ This project allows you to:
 - Configure multiple Kerberos.io agents using a single YAML configuration file
 - Automatically generate Docker Compose configurations for IP address ranges
 - Manage all camera agents with a modern CLI interface
+- **Mobile-first camera viewer** - React-based web interface with touch gestures
 - Organize configurations and recordings in structured directories
 - Rich terminal output with colors and progress indicators
 
@@ -17,6 +18,7 @@ This project allows you to:
 - **Python 3.7+** - Download from [python.org](https://python.org/downloads/)
 - **Docker** and **Docker Compose** installed
 - **pip** (Python package installer)
+- **Node.js 16+** and **npm** (for camera viewer) - Download from [nodejs.org](https://nodejs.org/)
 
 ## Quick Start
 
@@ -70,6 +72,10 @@ kerberos-swarms/
 ├── install.sh             # Unix installer (macOS/Linux)
 ├── install.bat            # Windows installer (Command Prompt)
 ├── install.ps1            # Windows installer (PowerShell)
+├── camera-viewer/         # React-based web interface
+│   ├── public/config.yml  # Symbolic link to main config
+│   ├── src/               # React components and services
+│   └── package.json       # Node.js dependencies
 ├── configs/               # Generated agent configurations
 ├── recordings/            # Agent recordings storage
 ├── scripts/               # Legacy shell scripts (deprecated)
@@ -185,6 +191,29 @@ kerberos cleanup
 # Clean up including volumes
 kerberos cleanup --volumes
 ```
+
+### Camera Viewer Web Interface
+
+The mobile-first camera viewer provides a responsive web interface for monitoring multiple cameras:
+
+```bash
+# Setup camera viewer (included in main install)
+./install.sh viewer
+
+# Start the camera viewer
+cd camera-viewer && npm start
+
+# Access the viewer
+# Open http://localhost:3000 in your browser
+```
+
+**Camera Viewer Features:**
+- **Mobile-first design** - Optimized for phones and tablets
+- **Touch gestures** - Double-tap any camera to enter fullscreen
+- **Responsive grid** - Automatic layout adjustment for any screen size
+- **Real-time status** - Live monitoring of camera health and connectivity
+- **16:9 aspect ratio** - Professional camera tile display
+- **Configuration sync** - Automatically reads from your `config.yml`
 
 ### Installation Options
 

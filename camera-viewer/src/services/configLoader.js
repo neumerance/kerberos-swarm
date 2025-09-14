@@ -1,38 +1,40 @@
 // Configuration loader for Kerberos.io camera setup
-// Uses values from root config.yml: IP range 10.19.19.30-38, ports 8080-8088/1935-1943
+// Loads configuration from root config.yml via symbolic link
+
+import yaml from 'js-yaml';
 
 export const loadKerberosConfig = async () => {
   try {
-    // In development: Read root config values directly
-    // In production: This should be replaced with API call to read ../config.yml
-    console.log('Loading camera configuration based on root config.yml structure');
+    console.log('Loading camera configuration from config.yml');
     
-    const rootConfig = {
-      cameras: {
-        ip_range: {
-          start: "10.19.19.30",
-          end: "10.19.19.38"
-        }
-      },
-      docker: {
-        web_port_start: 8080,
-        rtmp_port_start: 1935
-      }
-    };
+    // Fetch the config.yml file via the symbolic link in public directory
+    const response = await fetch('/config.yml');
+    if (!response.ok) {
+      throw new Error(`Failed to fetch config.yml: ${response.status} ${response.statusText}`);
+    }
+    
+    const configText = await response.text();
+    const rootConfig = yaml.load(configText);
+    
+    console.log('Loaded configuration:', {
+      ipRange: rootConfig.cameras.ip_range,
+      webPortStart: rootConfig.docker.web_port_start,
+      rtmpPortStart: rootConfig.docker.rtmp_port_start
+    });
     
     return generateCameraList(rootConfig);
   } catch (error) {
     console.error('Error loading configuration:', error);
-    throw new Error('Failed to load camera configuration. Please check config.yml file.');
+    throw new Error(`Failed to load camera configuration: ${error.message}`);
   }
 };
 
 const generateCameraList = (config) => {
   const cameras = [];
-  const startIp = config.cameras?.ip_range?.start || "10.19.19.30";
-  const endIp = config.cameras?.ip_range?.end || "10.19.19.38";
-  const webPortStart = config.docker?.web_port_start || 8080;
-  const rtmpPortStart = config.docker?.rtmp_port_start || 1935;
+  const startIp = config.cameras.ip_range.start;
+  const endIp = config.cameras.ip_range.end;
+  const webPortStart = config.docker.web_port_start;
+  const rtmpPortStart = config.docker.rtmp_port_start;
   
   const startParts = startIp.split('.').map(Number);
   const endParts = endIp.split('.').map(Number);

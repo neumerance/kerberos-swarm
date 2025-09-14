@@ -73,6 +73,7 @@ temp/
 .tmp/
 
 # User-specific configuration (keep example files)
+config.yml
 config.yml.local
 production.yml
 staging.yml
@@ -90,3 +91,15 @@ kerberos.ps1
 .pytest_cache/
 .tox/
 .tool-versions
+
+# Node.js / React (camera-viewer)
+camera-viewer/node_modules/
+camera-viewer/build/
+camera-viewer/.env
+camera-viewer/.env.local
+camera-viewer/.env.development.local
+camera-viewer/.env.test.local
+camera-viewer/.env.production.local
+camera-viewer/npm-debug.log*
+camera-viewer/yarn-debug.log*
+camera-viewer/yarn-error.log*
