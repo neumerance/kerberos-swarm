@@ -1,47 +1,33 @@
-import { useState, useRef, useEffect, useCallback } from 'react';
+import { useRef, useEffect, useCallback } from 'react';
 
 export const useTouchGestures = (ref, onDoubleClick) => {
-  const [tapCount, setTapCount] = useState(0);
-  const tapTimeoutRef = useRef(null);
+  const lastTapRef = useRef(0);
 
   const handleTouchEnd = useCallback((e) => {
-    e.preventDefault();
+    const now = Date.now();
+    const timeDiff = now - lastTapRef.current;
     
-    setTapCount(prev => {
-      const newCount = prev + 1;
-      
-      // Clear existing timeout
-      if (tapTimeoutRef.current) {
-        clearTimeout(tapTimeoutRef.current);
-      }
-      
-      // Set new timeout for double-tap detection
-      tapTimeoutRef.current = setTimeout(() => {
-        if (newCount === 2) {
-          // Double tap detected
-          onDoubleClick && onDoubleClick();
-        }
-        setTapCount(0);
-      }, 300); // 300ms window for double-tap
-      
-      return newCount;
-    });
+    if (timeDiff < 300 && timeDiff > 0) {
+      // Double tap detected
+      e.preventDefault();
+      console.log('Touch double-tap detected');
+      onDoubleClick && onDoubleClick();
+      lastTapRef.current = 0; // Reset
+    } else {
+      // First tap or too long
+      lastTapRef.current = now;
+    }
   }, [onDoubleClick]);
 
-  // Add touch event listener
   useEffect(() => {
     const element = ref.current;
     if (!element) return;
 
+    // Only add touch handler, let the regular onDoubleClick handle mouse events
     element.addEventListener('touchend', handleTouchEnd, { passive: false });
     
     return () => {
       element.removeEventListener('touchend', handleTouchEnd);
-      if (tapTimeoutRef.current) {
-        clearTimeout(tapTimeoutRef.current);
-      }
     };
   }, [ref, handleTouchEnd]);
-
-  return tapCount;
 };

@@ -16,6 +16,12 @@
 .camera-tile:focus {
   border-color: #333;
   transform: scale(1.02);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+.camera-tile:active {
+  transform: scale(0.98);
+  border-color: #555;
 }
 
 .camera-header {

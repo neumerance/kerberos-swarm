@@ -5,7 +5,13 @@ import './CameraTile.css';
 const CameraTile = ({ camera, onDoubleClick }) => {
   const tileRef = React.useRef(null);
 
-  useTouchGestures(tileRef, onDoubleClick);
+  // Add debugging for double-click
+  const handleDoubleClick = () => {
+    console.log('Double-click detected on camera:', camera.name);
+    onDoubleClick && onDoubleClick();
+  };
+
+  useTouchGestures(tileRef, handleDoubleClick);
 
   const getStatusIcon = () => {
     switch (camera.status) {
@@ -41,6 +47,9 @@ const CameraTile = ({ camera, onDoubleClick }) => {
     <div 
       ref={tileRef}
       className={`camera-tile ${camera.status}`}
+      onDoubleClick={handleDoubleClick}
+      style={{ cursor: 'pointer' }}
+      title="Double-click to view fullscreen"
     >
       <div className="camera-header">
         <span className="camera-name">{camera.name}</span>
@@ -71,18 +80,15 @@ const CameraTile = ({ camera, onDoubleClick }) => {
         ) : camera.status === 'connecting' ? (
           <div className="loading-placeholder">
             <div className="loading-spinner"></div>
-            <p>Connecting...</p>
           </div>
         ) : (
           <div className="offline-placeholder">
             <div className="offline-icon">📹</div>
-            <p>{camera.status === 'offline' ? 'Camera Offline' : 'Connection Error'}</p>
           </div>
         )}
       </div>
       
       <div className="camera-info">
-        <span className="camera-ip">{camera.ip}</span>
         <span className="double-tap-hint">Double tap for fullscreen</span>
       </div>
     </div>
