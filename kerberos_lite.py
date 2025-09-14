@@ -20,6 +20,13 @@ except ImportError:
     subprocess.check_call([sys.executable, "-m", "pip", "install", "PyYAML"])
     import yaml
 
+try:
+    import psutil
+except ImportError:
+    print("Installing psutil for system checks...")
+    subprocess.check_call([sys.executable, "-m", "pip", "install", "psutil"])
+    import psutil
+
 class Colors:
     """ANSI color codes for cross-platform terminal colors"""
     RED = '\033[0;31m'
@@ -286,6 +293,202 @@ class KerberosManager:
         else:
             print_warning(f"Configuration file not found: {self.config_file}")
 
+    def system_check(self):
+        """Comprehensive system resources and capacity check"""
+        print_header("🔍 System Resources Check")
+        
+        # Load configuration
+        config = self.load_config()
+        if not config:
+            print_error("Cannot perform system check without valid configuration")
+            return False
+            
+        # Calculate camera count
+        try:
+            cameras = config.get('cameras', {})
+            ip_range = cameras.get('ip_range', {})
+            start_ip = ip_range.get('start', '')
+            end_ip = ip_range.get('end', '')
+            
+            if not start_ip or not end_ip:
+                print_error("IP range not properly configured")
+                return False
+                
+            ip_list = self.generate_ip_list(start_ip, end_ip)
+            camera_count = len(ip_list)
+            
+        except Exception as e:
+            print_error(f"Error calculating camera count: {e}")
+            return False
+        
+        print_info(f"Checking capacity for {camera_count} cameras")
+        
+        # Calculate resource requirements
+        requirements = self._calculate_resource_requirements(config, camera_count)
+        
+        # Get current system resources
+        system_resources = self._get_system_resources()
+        
+        # Print current system status
+        print(f"\n💻 System Resources:")
+        print(f"   Memory: {system_resources['memory']['available_gb']:.1f} GB available / {system_resources['memory']['total_gb']:.1f} GB total")
+        print(f"   CPU: {system_resources['cpu']['cores']} cores ({system_resources['cpu']['current_usage']:.1f}% current usage)")
+        print(f"   Disk: {system_resources['disk']['free_gb']:.1f} GB free / {system_resources['disk']['total_gb']:.1f} GB total")
+        
+        # Print requirements
+        print(f"\n📊 Estimated Requirements:")
+        print(f"   Memory per agent: {requirements['memory_per_agent_mb']} MB")
+        print(f"   Total memory needed: {requirements['total_memory_gb']:.1f} GB")
+        print(f"   Estimated CPU usage: {requirements['total_cpu_percent']:.1f}%")
+        print(f"   Daily storage: {requirements['daily_storage_gb']:.1f} GB/day")
+        
+        # Capacity check
+        print(f"\n✅ Capacity Assessment:")
+        
+        memory_ok = system_resources['memory']['available_gb'] >= requirements['total_memory_gb']
+        cpu_ok = requirements['total_cpu_percent'] <= 80
+        storage_ok = True  # We'll just warn about storage
+        
+        print(f"   Memory: {'✅ OK' if memory_ok else '❌ INSUFFICIENT'}")
+        if not memory_ok:
+            shortage = requirements['total_memory_gb'] - system_resources['memory']['available_gb']
+            print(f"      Need {shortage:.1f} GB more memory")
+            
+        print(f"   CPU: {'✅ OK' if cpu_ok else '⚠️  HIGH LOAD'}")
+        if not cpu_ok:
+            print(f"      Warning: {requirements['total_cpu_percent']:.1f}% estimated usage")
+            
+        # Check ports
+        busy_ports = self._check_ports(config, camera_count)
+        if busy_ports:
+            print(f"   Ports: ⚠️  CONFLICTS DETECTED")
+            for port in busy_ports[:5]:  # Show first 5
+                print(f"      {port} is in use")
+        else:
+            print(f"   Ports: ✅ AVAILABLE")
+            
+        # Overall assessment
+        if memory_ok and cpu_ok and not busy_ports:
+            print_status("\n🎯 SYSTEM READY FOR DEPLOYMENT")
+            return True
+        else:
+            print_warning("\n⚠️  DEPLOYMENT MAY HAVE ISSUES")
+            if not memory_ok:
+                print("   - Add more RAM or reduce camera count")
+            if not cpu_ok:
+                print("   - Monitor performance during operation")
+            if busy_ports:
+                print("   - Stop conflicting services or change ports")
+            return False
+    
+    def _calculate_resource_requirements(self, config, camera_count):
+        """Calculate estimated resource requirements"""
+        
+        # Base requirements per agent
+        base_memory_mb = 256
+        base_cpu_percent = 5
+        
+        # Additional based on features
+        additional_memory = 0
+        additional_cpu = 0
+        
+        # Recording adds overhead
+        if config.get('cameras', {}).get('recording', {}).get('enabled', False):
+            additional_memory += 128
+            additional_cpu += 3
+            
+        # Streaming adds overhead
+        if config.get('cameras', {}).get('stream', {}).get('enabled', False):
+            additional_memory += 64
+            additional_cpu += 2
+            
+        # Motion detection adds overhead
+        if config.get('cameras', {}).get('motion_detection', {}).get('enabled', False):
+            additional_memory += 32
+            additional_cpu += 2
+            
+        memory_per_agent = base_memory_mb + additional_memory
+        cpu_per_agent = base_cpu_percent + additional_cpu
+        
+        total_memory_mb = memory_per_agent * camera_count
+        total_cpu_percent = cpu_per_agent * camera_count
+        
+        # Estimate daily storage (very rough)
+        daily_storage_gb = 0
+        if config.get('cameras', {}).get('recording', {}).get('enabled', False):
+            # Rough estimate: 10MB per minute of recording
+            # Assume motion triggers every 10 minutes, 40 seconds per trigger
+            daily_recordings = 24 * 6  # 6 per hour
+            mb_per_recording = 10 * (40/60)  # 40 seconds
+            daily_storage_gb = (daily_recordings * mb_per_recording * camera_count) / 1024
+            
+        return {
+            'memory_per_agent_mb': memory_per_agent,
+            'total_memory_gb': total_memory_mb / 1024,
+            'total_cpu_percent': total_cpu_percent,
+            'daily_storage_gb': daily_storage_gb
+        }
+    
+    def _get_system_resources(self):
+        """Get current system resource information"""
+        # Memory
+        memory = psutil.virtual_memory()
+        
+        # CPU
+        cpu_usage = psutil.cpu_percent(interval=1)
+        
+        # Disk
+        disk = psutil.disk_usage('/')
+        
+        return {
+            'memory': {
+                'total_gb': memory.total / (1024**3),
+                'available_gb': memory.available / (1024**3),
+                'usage_percent': memory.percent
+            },
+            'cpu': {
+                'cores': psutil.cpu_count(),
+                'current_usage': cpu_usage
+            },
+            'disk': {
+                'total_gb': disk.total / (1024**3),
+                'free_gb': disk.free / (1024**3),
+                'usage_percent': (disk.used / disk.total) * 100
+            }
+        }
+        
+    def _check_ports(self, config, camera_count):
+        """Check if required ports are available"""
+        import socket
+        
+        busy_ports = []
+        web_port_start = config.get('docker', {}).get('web_port_start', 8080)
+        rtmp_port_start = config.get('docker', {}).get('rtmp_port_start', 1935)
+        
+        # Check web ports
+        for i in range(camera_count):
+            port = web_port_start + i
+            if self._is_port_busy(port):
+                busy_ports.append(f"Web port {port}")
+                
+        # Check RTMP ports  
+        for i in range(camera_count):
+            port = rtmp_port_start + i
+            if self._is_port_busy(port):
+                busy_ports.append(f"RTMP port {port}")
+                
+        return busy_ports
+        
+    def _is_port_busy(self, port):
+        """Check if a port is in use"""
+        import socket
+        try:
+            with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+                s.bind(('localhost', port))
+                return False
+        except OSError:
+            return True
+
 def main():
     parser = argparse.ArgumentParser(
         description='Kerberos.io Multi-Agent CLI Tool',
@@ -298,6 +501,7 @@ Examples:
   %(prog)s status                Show agent status
   %(prog)s logs                  Show logs
   %(prog)s check                 Check dependencies
+  %(prog)s syscheck              Check system resources and capacity
         """
     )
     
@@ -341,6 +545,9 @@ Examples:
     # Check command
     subparsers.add_parser('check', help='Check system dependencies and requirements')
     
+    # System check command  
+    subparsers.add_parser('syscheck', help='Comprehensive system resources and capacity check')
+    
     # Info command
     subparsers.add_parser('info', help='Show project information and configuration summary')
     
@@ -354,6 +561,11 @@ Examples:
     
     if args.command == 'check':
         manager.check_dependencies()
+        
+    elif args.command == 'syscheck':
+        success = manager.system_check()
+        if not success:
+            print_info("\nTip: Use 'kerberos check' to verify Docker installation first")
         
     elif args.command == 'generate':
         print_header("Generating docker-compose.yml")
